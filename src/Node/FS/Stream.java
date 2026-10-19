@@ -6,6 +6,10 @@
         } catch (java.io.IOException failure) {
             throw new RuntimeException(failure);
         }
+        // The whole file is available eagerly; emit end through the stream
+        // history so listeners and pipes attached later still observe it.
+        stream.ended = true;
+        stream.fire("end");
         return stream;
     }
 
@@ -19,6 +23,8 @@
         } catch (java.io.IOException failure) {
             throw new RuntimeException(failure);
         }
+        stream.ended = true;
+        stream.fire("end");
         return stream;
     }
 

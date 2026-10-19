@@ -2,8 +2,8 @@
 
 ## JVM tests
 
-`./bin/test` delegates to the [common runner](../javapurs/docs/testing.md#port-particulier) as `node-fs`, but currently exits **1** with an unsupported-completion diagnostic: `Test.Main` combines filesystem callbacks, streams and `launchAff_` without a joined completion action.
-`./bin/test --help` is read-only. Even with `--clean`, this unsupported protocol is rejected before build/workspace creation; the checkout and its outputs are preserved. See the [protocol inventory](../javapurs/docs/port-launchers.md).
+`./bin/test` delegates to the [common runner](../javapurs/docs/testing.md#port-particulier) as `node-fs`. The wrapper runs the synchronous filesystem suites, waits for the exported `TestAff.testAff` action, and finishes with the common marker. Java file streams now emit `end` correctly, so the stream check reaches `all good` before completion.
+`./bin/test --help` is read-only and `--clean` rebuilds the backend first. The checkout and its outputs are preserved; see the [protocol inventory](../javapurs/docs/port-launchers.md) and [M27](../javapurs/docs/testing.md#validation-m27).
 
 [![Latest release](http://img.shields.io/github/release/purescript-node/purescript-node-fs.svg)](https://github.com/purescript-node/purescript-node-fs/releases)
 [![Build status](https://github.com/purescript-node/purescript-node-fs/workflows/CI/badge.svg?branch=master)](https://github.com/purescript-node/purescript-node-fs/actions?query=workflow%3ACI+branch%3Amaster)
