@@ -44,7 +44,9 @@
                     }
                 }
                 stats.mode = bits;
-            } catch (UnsupportedOperationException unsupported) { }
+            } catch (UnsupportedOperationException unsupported) {
+                // Non-POSIX filesystem: mode stays at the type bits below.
+            }
             stats.mode += stats.file ? 0100000 : stats.directory ? 0040000 : stats.symbolicLink ? 0120000 : 0;
             return stats;
         } catch (java.io.IOException failure) {

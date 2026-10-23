@@ -150,12 +150,12 @@ main = do
   let fdFile = fp [ "tmp", "FD.json" ]
   fd0 <- S.fdOpen fdFile W (Just 420)
   buf0 <- Buffer.fromString "[ 42 ]" UTF8
-  bytes0 <- S.fdAppend fd0 buf0
+  _ <- S.fdAppend fd0 buf0
   S.fdFlush fd0
   S.fdClose fd0
   fd1 <- S.fdOpen fdFile R Nothing
   buf1 <- Buffer.create =<< Buffer.size buf0
-  bytes1 <- S.fdNext fd1 buf1
+  _ <- S.fdNext fd1 buf1
   S.fdClose fd1
 
   log "statSync on a non-existing file should be catchable"
@@ -182,17 +182,18 @@ main = do
     Nothing -> throw $ "`access \"" <> readableFixturePath <> "\" W_OK` should produce error"
 
   log "copy tests"
-  let outerTmpDir = "./test/node-fs-tests"
-  S.mkdir' outerTmpDir { recursive: true, mode: permsAll }
-  tempDir <- S.mkdtemp outerTmpDir
-  S.mkdir' tempDir { recursive: true, mode: permsAll }
-  let destReadPath = Path.concat [ tempDir, "readable.txt" ]
-  S.copyFile readableFixturePath destReadPath
-  unlessM (S.exists destReadPath) do
-    throw $ destReadPath <> " does not exist after copy"
+  tempDir <- S.mkdtemp "./tmp/node-fs-tests-"
+  copyResult <- try do
+    S.mkdir' tempDir { recursive: true, mode: permsAll }
+    let destReadPath = Path.concat [ tempDir, "readable.txt" ]
+    S.copyFile readableFixturePath destReadPath
+    unlessM (S.exists destReadPath) do
+      throw $ destReadPath <> " does not exist after copy"
 
-  copyErr <- try $ S.copyFile' readableFixturePath destReadPath copyFile_EXCL
-  case copyErr of
-    Left _ -> pure unit
-    Right _ -> throw $ destReadPath <> " already exists, but copying a file to there did not throw an error with COPYFILE_EXCL option"
+    copyErr <- try $ S.copyFile' readableFixturePath destReadPath copyFile_EXCL
+    case copyErr of
+      Left _ -> pure unit
+      Right _ -> throw $ destReadPath <> " already exists, but copying a file to there did not throw an error with COPYFILE_EXCL option"
+  S.rm' tempDir { force: true, maxRetries: 0, recursive: true, retryDelay: 100 }
+  either throwException pure copyResult
 

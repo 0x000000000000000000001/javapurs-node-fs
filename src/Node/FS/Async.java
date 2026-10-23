@@ -2,8 +2,15 @@
     // callback is invoked inline; the JVM already has a file system layer, so
     // the asynchronous bookkeeping of Node is not needed.
     private static void __callback(Object callbackObj, Object error, Object value) {
-        java.util.function.Function<Object, Object> callback = (java.util.function.Function<Object, Object>) callbackObj;
-        Object effect = ((java.util.function.Function<Object, Object>) callback.apply(error)).apply(value);
+        Object callbackValue = callbackObj;
+        if (callbackValue instanceof java.util.function.Supplier) {
+            callbackValue = ((java.util.function.Supplier<Object>) callbackValue).get();
+        }
+        java.util.function.Function<Object, Object> callback = (java.util.function.Function<Object, Object>) callbackValue;
+        Object partial = callback.apply(error);
+        Object effect = partial instanceof java.util.function.Function
+            ? ((java.util.function.Function<Object, Object>) partial).apply(value)
+            : partial;
         ((java.util.function.Supplier<Object>) effect).get();
     }
 

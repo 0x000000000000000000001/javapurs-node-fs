@@ -85,12 +85,13 @@
                 throw new java.io.IOException("ENOENT: no such file or directory, rm '" + path + "'");
             }
             if (java.nio.file.Files.isDirectory(file, java.nio.file.LinkOption.NOFOLLOW_LINKS) && recursive) {
-                java.nio.file.Files.walk(file)
-                    .sorted(java.util.Comparator.reverseOrder())
-                    .forEach(entry -> {
-                        try { java.nio.file.Files.deleteIfExists(entry); }
-                        catch (java.io.IOException failure) { throw __failure(failure); }
-                    });
+                try (java.util.stream.Stream<java.nio.file.Path> entries = java.nio.file.Files.walk(file)) {
+                    entries.sorted(java.util.Comparator.reverseOrder())
+                        .forEach(entry -> {
+                            try { java.nio.file.Files.deleteIfExists(entry); }
+                            catch (java.io.IOException failure) { throw __failure(failure); }
+                        });
+                }
             } else {
                 java.nio.file.Files.delete(file);
             }
@@ -98,8 +99,8 @@
     }
 
     public static Object[] readdir(String path) {
-        try {
-            return java.nio.file.Files.list(__path(path))
+        try (java.util.stream.Stream<java.nio.file.Path> entries = java.nio.file.Files.list(__path(path))) {
+            return entries
                 .map(entry -> (Object) entry.getFileName().toString())
                 .sorted()
                 .toArray();

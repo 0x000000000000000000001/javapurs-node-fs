@@ -1,5 +1,9 @@
 # purescript-node-fs
 
+Java port of the PureScript `node-fs` package. See the
+[port maintenance guide](../javapurs/docs/port-maintenance.md)
+for source layout, local dependency selection and JVM validation.
+
 ## JVM tests
 
 `./bin/test` delegates to the [common runner](../javapurs/docs/testing.md#port-particulier) as `node-fs`. The wrapper runs the synchronous filesystem suites, waits for the exported `TestAff.testAff` action, and finishes with the common marker. Java file streams now emit `end` correctly, so the stream check reaches `all good` before completion.
